@@ -1,6 +1,6 @@
 /* global AFRAME */
 
-/* 
+/*
   This file contains shaders used (or not) in this project. Most of them
   are not my work, but a couple of them very much are. I've tried to make
   the distinction clear with comment descriptions.
@@ -149,10 +149,10 @@ AFRAME.registerShader('building-shader', {
     numrows: {type: 'float', is: 'uniform'}, // Initial number of window rows
     numcols: {type: 'float', is: 'uniform'}, // Initial number of window columns
     speed: {type: 'float', is: 'uniform'}, // Speed of slide, colorslide, and grow
-    
+
     height: {type: 'float', is: 'uniform'}, // Fractional height of the box
     width: {type: 'float', is: 'uniform'}, // Fractional width of the box
-    
+
     color1: {type: 'color', is: 'uniform'},
     color2: {type: 'color', is: 'uniform'},
     usecolor1: {type: 'float', is: 'uniform'}, // If 0.0, blue-green gradient used instead
@@ -162,7 +162,7 @@ AFRAME.registerShader('building-shader', {
     colorgrid: {type: 'float', is: 'uniform'}, // 0 to match with numrows, 1 to turn off
     coloroffset: {type: 'float', is: 'uniform'}, // Offset color animation (sin or cos) so groups aren't as synchronized
     invertcolors: {type: 'float', is: 'uniform'}, // Makes window color and building color switch places
-    
+
     slide: {type: 'float', is: 'uniform'}, // Number of windows to slide by. 0.0 to not slide
     slidestart: {type: 'float', is: 'uniform'}, // Start point for clamp
     slidesine: {type: 'float', is: 'uniform'}, // 0.0 or 1.0. If slide should sine.
@@ -227,7 +227,7 @@ void main() {
 
   vec2 st = vUv;
   vec3 boxcolor1 = vec3(0.0);
-  vec3 boxcolor2 = vec3(0.0); 
+  vec3 boxcolor2 = vec3(0.0);
 
   float growval = step(1.0, grow) * time * speed * (1.0 - growsine) * (1.0 - growclamp);
   growval += (((sin(time/5.0) + 1.0) / 2.0) * grow) * growsine;
@@ -249,7 +249,7 @@ void main() {
   float b = box(st,vec2(width, height),0.001);
   float box = b * (1.0 - invertcolors) + (1.0 - b) * invertcolors;
   boxcolor1 = color1 * box * usecolor1;
-  boxcolor2 = color2 * box * usecolor2; 
+  boxcolor2 = color2 * box * usecolor2;
 
   vec2 uv2 = vUv;
 
@@ -261,7 +261,7 @@ void main() {
   uv2[0] *= 1.0 + ((numcols + (growval * (1.0 - growvert)) - 1.0) * colorgrid);
   uv2[1] *= 1.0 + ((numrows + growval - 1.0) * colorgrid);
   uv2 = fract(uv2);
-  
+
   float rainbow1 = 1.0 - usecolor1;
   float rainbow2 = 1.0 - usecolor2;
   vec3 merge1 = vec3(0.0, uv2 * step(1.0, box)) * rainbow1;
@@ -274,9 +274,9 @@ void main() {
   float israinbow = rainbow1 * rainbow2;
   float rainbowscillate = cos(time) * coloroffset + sin(time) * (1.0 - coloroffset);
   float oscillate = cos(time) * coloroffset + sin(time) * (1.0 - coloroffset);
-  float combo = (1.0 - usecolors) * (rainbowscillate * 0.5 
-                                  + israinbow * 0.7 
-                                  + usecolor1 * 1.0 
+  float combo = (1.0 - usecolors) * (rainbowscillate * 0.5
+                                  + israinbow * 0.7
+                                  + usecolor1 * 1.0
                                   + usecolor2 * 0.5)
                  + (oscillate * 0.25 + 0.55) * usecolors;
 
@@ -296,7 +296,7 @@ AFRAME.registerShader('caustic-shader', {
     speed: {type: 'float', is: 'uniform'},
     brightness: {type: 'float', is: 'uniform'},
     resolution: {type: 'float', is: 'uniform'},
-    
+
     color: {type: 'color', is: 'uniform'},
     backgroundColor: {type: 'color', is: 'uniform'},
   },
@@ -322,24 +322,24 @@ void main() {
     float time = timeMsec / 2000.0; // Convert from A-Frame milliseconds to typical time in seconds.
     vec2 res = vec2(resolution, resolution);
     vec2 uv = vUv * res;
-    
+
     vec2 p = mod(uv * TAU, TAU) - 250.0;
     vec2 i = vec2(p);
-    
+
     float c = 1.0;
     float inten = 0.005;
-    
+
     for ( int n = 0; n < MAX_ITER; n++ )  {
         float t = time * speed * (1.0 - (3.5 / float(n + 1)));
         i = p + vec2(cos(t - i.x) + sin(t + i.y), sin(t - i.y) + cos(t + i.x));
         c += 1.0 / length(vec2(p.x / (sin(i.x + t) / inten), p.y / (cos(i.y + t) / inten)));
     }
-    
+
     c /= float( MAX_ITER  );
     c = 1.17 - pow( c, brightness );
-    
+
     vec3 rgb = vec3( pow( abs( c ), 8.0 ) );
-    
+
     gl_FragColor = vec4( rgb * color + backgroundColor, 1.0 );
 }
 `
@@ -352,8 +352,8 @@ AFRAME.registerShader('lightspeed-shader', {
     speed: {type: 'float', is: 'uniform'},
     fadeaway: {type: 'float', is: 'uniform'}, // determines how many stars are visible in distance
     resolution: {type: 'float', is: 'uniform'}, // 1.0 centers the animation,
-    uniformity: {type: 'float', is: 'uniform'}, // can cause the stars to come in waves, 
-    
+    uniformity: {type: 'float', is: 'uniform'}, // can cause the stars to come in waves,
+
     color: {type: 'color', is: 'uniform'},
   },
 
@@ -398,7 +398,7 @@ void main(void) {
     float adist = radDist / rad * .1;
     float dist = (t2 * .1 + adist);
     dist = abs(fract(dist) - fadeAway);
-    
+
     float outputColor = (1.0 / (dist)) * cos(0.7 * sin(t)) * adist / radDist / 30.0;
     angle = fract(angle + .61);
     gl_FragColor = vec4(outputColor * color, 1.0);
@@ -442,18 +442,18 @@ vec2 pattern(vec2 p) {
 }
 
 void main( void ) {
-  
+
 	vec2 p = (vUv.xy - 0.5) * zoom;
 	vec3 col = vec3(0.0);
-	
+
 	for (int i=0; i<3; i++)
 		p.xy = pattern(p);
-	
+
 	col.rg = sin(p.xy);
 	col.b = max(step(abs(p.x*p.x),0.5), -1.0 / abs(p.y));
-	
+
 	col = clamp( col, vec3(0.0), vec3(1.0) );
-	
+
 	gl_FragColor = vec4( col, 1.0 );
 
 }
@@ -467,7 +467,7 @@ AFRAME.registerShader('grid-shader', {
     resolution: {type: 'float', is: 'uniform'},
     intensity: {type: 'float', is: 'uniform'}, // Initial number of window rows
     speed: {type: 'float', is: 'uniform'}, // Speed of slide, colorslide, and grow
-    
+
     color: {type: 'color', is: 'uniform'},
     backgroundColor: {type: 'color', is: 'uniform'},
   },
@@ -502,13 +502,13 @@ vec2 circuit(vec2 p) {
 	float r = 0.5;
 	float v = 0.0, g = 1.0;
 	float d;
-	
+
 	const int iter = 7;
 	for(int i = 0; i < iter; i ++)
 	{
 		d = p.x - r;
 		g += pow(clamp(1.0 - abs(d), 0.0, 1.0), 200.0);
-		
+
 		if(d > 0.0) {
 			p.x = (p.x - r) / (1.8 - r);
 		}
@@ -523,7 +523,7 @@ vec2 circuit(vec2 p) {
 
 void main()
 {
-  
+
   float time = 3.0 * timeMsec / 1000.0; // Convert from A-Frame milliseconds to typical time in seconds.
 	vec2 uv = ( vUv.xy + 0.5 ) * (resolution * 2.0 + 1.0);
 	vec2 cid2 = floor(uv);
@@ -536,7 +536,7 @@ void main()
 
 	float f = max(0.4 - mod(uv.y - uv.x + (time * speed) + (dg.y * 0.2), 2.5), 0.0) * intensity;
 	col2 *= f;
-	
+
 	gl_FragColor = vec4(col1 + col2, 1.0);
 }
 `
@@ -548,7 +548,7 @@ AFRAME.registerShader('disco-shader', {
     timeMsec: {type: 'time', is: 'uniform'},
     speed: {type: 'float', is: 'uniform'},
     resolution: {type: 'float', is: 'uniform'},
-    
+
     color: {type: 'color', is: 'uniform'},
     backgroundColor: {type: 'color', is: 'uniform'},
   },
@@ -587,19 +587,19 @@ void main( void ) {
   float time = timeMsec / 1000.0; // Convert from A-Frame milliseconds to typical time in seconds.
 	vec2 pos = (resolution*vUv.xy);
 	pos *= 10.;
-	
+
 	vec2 interval = pos * vec2(10.0, 5.);
 	if (mod(interval.y, 2.) < 1.) {
 	    interval.y = -interval.y + 1.;
 	}
-	
+
 	vec2 fi = floor(interval);
 	if (mod(fi.x, 2.) < 1.) {
 	    fi.y = -fi.y + interval.y;
 	} else{
 	    fi.y = fi.y - interval.y + 1.;
 	}
-	
+
 	float outputColor = pow(
 	    sin(mod(
 	        speed*time, 2.*PI) + rand(vec2(floor(interval.x + fi.y),
@@ -608,7 +608,7 @@ void main( void ) {
     3.);
     vec3 outcolor = backgroundColor * outputColor + color * (1.0 - outputColor);
 	gl_FragColor = vec4(outcolor , 1.);
-}	
+}
 `
 });
 
@@ -628,7 +628,7 @@ float surface3 ( vec3 coord ) {
 void main( void ) {
     float time = 0.05 * timeMsec / 1000.0; // Convert from A-Frame milliseconds to typical time in seconds.
     vec2 uvMax = ( 2.0 * asin( sin( 2.0 * PI * vUv ) ) ) / PI;
-    
+
     vec2 uvScale = vec2(resolution, resolution);
     float n = surface3(vec3(uvMax * uvScale * 0.2, time * speed));
 
@@ -645,7 +645,7 @@ AFRAME.registerShader('electric-shader', {
     resolution: {type: 'float', is: 'uniform'},
     displacement: {type: 'float', is: 'uniform'},
     scale: {type: 'float', is: 'uniform'},
-    
+
     color: {type: 'color', is: 'uniform'},
   },
 
@@ -707,14 +707,14 @@ float noise(vec2 p) {
   vec2 w = floor(p);
   vec2 k = fract(p);
   k = k*k*(3.-2.*k); // smooth it
-  
+
   float n = w.x + w.y*57.;
-  
+
   float a = hash(n);
   float b = hash(n+1.);
   float c = hash(n+57.);
   float d = hash(n+58.);
-  
+
   return mix(
     mix(a, b, k.x),
     mix(c, d, k.x),
@@ -737,16 +737,16 @@ float fbm(vec2 p) {
 
 void main() {
   float time = timeMsec / 6000.0;
-  
+
   // relative coordinates
   vec2 p = vec2(vUv*16.)*vec2(1., 3.);
   float t = time * .009 * speed;
-  
+
   // calling fbm on itself
   vec2 a = vec2(fbm(p-t*2.), fbm(p-t*2.+8.1));
   vec2 b = vec2(fbm(p+t*4. + a*7. + 3.1), fbm(p-t*4. + a*7. + 91.1));
   float c = fbm(b*9. + t*20.);
-  
+
   // increase contrast
   c = smoothstep(0.15,0.98,c);
 
@@ -816,7 +816,7 @@ varying float vNoise;
 void main(void){
   //float time = (timeMsec + 50.0 * val * 2000.0) / 2000.0; // Convert from A-Frame milliseconds to typical time in seconds.
   // 200 for ripples
-  float time = (3.14159265358979 / (4.0*594.059)) * (timeMsec + skip * 100.0 * 2000.0); 
+  float time = (3.14159265358979 / (4.0*594.059)) * (timeMsec + skip * 100.0 * 2000.0);
   vec2 resolution = vec2(resolution, resolution);
 	vec2 v = (vUv - 0.5) * resolution;
 	vec2 vv = v; vec2 vvv = v;
@@ -842,7 +842,7 @@ void main(void){
 	float Z = 1.0 + mspt.y;//*6.0;
 	float ZZ = 1.0 + mspt.y;//*6.2;
 	float ZZZ = 1.0 + (mspt.y);//*6.9;
-	
+
 	for ( int i = 0; i < 40; i++ ){
     // dot product leaves square of magnitude of v
 		float r = dot(v,v);
@@ -862,14 +862,14 @@ void main(void){
 				RRR += r;
 			}
 		}
-		
+
 		v = vec2( dot(v, xa), dot(v, ya)) * Z * ZZ + shift;
 	}
 	float c = ((mod(R,2.0)>1.0)?1.0-fract(R):fract(R));
 	float cc = ((mod(RR,2.0)>1.0)?1.0-fract(RR):fract(RR));
 	float ccc = ((mod(RRR,2.0)>1.0)?1.0-fract(RRR):fract(RRR));
-  
-	gl_FragColor = vec4(ccc, cc, c, 1.0); 
+
+	gl_FragColor = vec4(ccc, cc, c, 1.0);
 }
 `
 });
@@ -1032,7 +1032,7 @@ float fbm(vec4 p) {
 
 void main() {
     float time = timeMsec / 2000.0;
-  
+
     // relative coordinates
     vec2 uvScale = vec2(1.0, 4.0);
     vec2 p = vUv * uvScale;
