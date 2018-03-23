@@ -14,14 +14,14 @@ AFRAME.registerComponent('entity-generator', {
      mixin: {default: ''},
      num: {default: 10}
    },
- 
+
    init: function () {
      var data = this.data;
      var mixingroups = data.mixin.split(',');
-     
+
      // Create entities with supplied mixin.
      for (var i = 0; i < data.num; i++) {
-       for (var j = 0; j < mixingroups.length; j++) {   
+       for (var j = 0; j < mixingroups.length; j++) {
          var entity = document.createElement('a-entity');
          entity.setAttribute('mixin', mixingroups[j]);
          this.el.appendChild(entity);
@@ -158,7 +158,7 @@ AFRAME.registerComponent('audioanalyser', {
   }
 });
 
-/* 
+/*
   Gpoly include component. Added a flag to switch off imported materials.
 */
 // see https://github.com/Utopiah/googlepoly-load-component for improvements
@@ -172,7 +172,7 @@ AFRAME.registerComponent('gpoly', {
     var id = this.data.polyid;
     var polyid = AFRAME.utils.getUrlParameter('polyid');
     if (polyid.length > 0) id = polyid;
-    
+
     let API_KEY = this.data.API_KEY;
     let url = "https://poly.googleapis.com/v1/assets/"+id+"/?key="+API_KEY;
     let el = this.el;
@@ -181,13 +181,13 @@ AFRAME.registerComponent('gpoly', {
       console.log('Please fill in your API KEY, cf https://developers.google.com/poly/develop/web ')
       return;
     }
-    
+
     fetch(url)
     .then(res => res.json())
     .then((out) => {
       var model = out.formats[0].root.url;
       var materials = out.formats[0].resources[0].url;
-      // using ob+mtl since glTF format is not 2.0 
+      // using ob+mtl since glTF format is not 2.0
       el.setAttribute("obj-model", "obj", model );
       if (this.data.useMaterials) {
         el.setAttribute("obj-model", "mtl", materials );
@@ -197,7 +197,7 @@ AFRAME.registerComponent('gpoly', {
   }
 });
 
-/* 
+/*
   look-controls component, based on https://github.com/aframevr/aframe/blob/master/docs/components/look-controls.md.
   Updates:
     Touch screen use works with vertical movement
@@ -228,7 +228,7 @@ if (navigator.getVRDisplays) {
 }
 
 function getVRDisplay () {
-  return vrDisplay; 
+  return vrDisplay;
 }
 
 /**
@@ -362,7 +362,7 @@ AFRAME.registerComponent('my-look-controls', {
     this.bindMethods();
 
     // Call enter VR handler if the scene has entered VR before the event listeners attached.
-    if (this.el.sceneEl.is('vr-mode')) { 
+    if (this.el.sceneEl.is('vr-mode')) {
       this.onEnterVR();
       document.querySelector('#click-instruction').setAttribute('visible', 'false');
       this.clickInstruction = false;
@@ -453,7 +453,7 @@ AFRAME.registerComponent('my-look-controls', {
     canvasEl.addEventListener('mousedown', this.onMouseDown, false);
     window.addEventListener('mousemove', this.onMouseMove, false);
     window.addEventListener('mouseup', this.onMouseUp, false);
-    
+
     // Key events.
     window.addEventListener("keydown", this.onKeyDown, false);
 
@@ -620,7 +620,7 @@ AFRAME.registerComponent('my-look-controls', {
   onMouseUp: function () {
     document.body.classList.remove(GRABBING_CLASS);
   },
-  
+
   /**
    * Register key press to escape mouse lock
    */
@@ -834,7 +834,7 @@ AFRAME.registerComponent('layout', {
     var childs = this.children.length;
 
     var flip = false;
-    
+
     if (this.children.length < 5) { flip = true;}
     this.initialPositions = [];
 
@@ -877,7 +877,7 @@ AFRAME.registerComponent('layout', {
     var numChildren = children.length;
     var positionFn;
     var positions;
-    
+
     // Calculate different positions based on layout shape.
     switch (data.type) {
       case 'box': {

@@ -13,25 +13,25 @@ function surround(el) {
   var postr = -pos.x + ' ' + (-pos.y + 5) + ' ' + 30; // zpos is simply scaled cam distance from menu
   el.setAttribute('animation__position', 'property: position; from: 0 0 0; to: ' + postr + '; dur: 1000');
   el.setAttribute('animation__rotation', 'property: rotation; from: 0 0 0; to: 0 90 0; dur: 1000');
-  el.setAttribute('animation__scale', 'property: scale; from: 1 1 1; to: 7.75 7.75 7.75; dur: 1000'); 
-  
+  el.setAttribute('animation__scale', 'property: scale; from: 1 1 1; to: 7.75 7.75 7.75; dur: 1000');
+
   // Disable mouse actions, since this menu item is surrounding the cursor
   el.active = false;
   // Hide all other buttons
   emitToClass(el, 'link', 'togglehide');
   // Bring up the minimenu
   togglemini(true);
-  
+
   // Update info text for whichever surround bubble is selected
   var infotext = document.querySelector('#info-text');
   infotext.setAttribute('text', "value: " + this.infotext);
-  
+
   // Streetlights need to move out of the way, interfere with surround bubbles
   document.querySelector('#streetlightsleft').setAttribute('animation__rotation', 'property: rotation; from: 0 90 0; to: -180 90 0; dur: 1; delay: 500');
   document.querySelector('#streetlightsright').setAttribute('animation__rotation', 'property: rotation; from: 0 90 0; to: 180 90 0; dur: 1; delay: 500');
 }
 
-/* 
+/*
   Currently, simply opens a tab to github. Fuse cursor is often blocked by adblockers. TODO Need workaround for this.
 */
 function about(el) {
@@ -99,7 +99,7 @@ function togglemini(minimenu) {
   var toggly = -1.2; var prevtoggly = -0.5;
   var prevz = 0.35; var z = 1.2;
   var prevrotx = -10; var rotx = -90;
-  
+
   // Constants for when menu is enabled
   if (minimenu) {
     mainy = -0.7; prevmainy = -10;
@@ -130,11 +130,11 @@ function emitToClass(el, name, message, details='') {
 }
 
 /*
-* State management for a menu item. 
+* State management for a menu item.
     Provides animations for mouse hover and click
     Allows an input function pointer so that each menu item can perform a specific action
     Supports a toggling "mini menu" for information on each sub-menu.
-    
+
     Each item manages its own state, but this state management in combination with message
     passing results in a functional "main menu" where items can behave independently
     if necessary.
@@ -152,13 +152,13 @@ AFRAME.registerComponent('menu-item', {
     this.el.tag = this.data.tag;
     this.el.mobile = isMobile();
     this.el.loaded = false;
-    
+
     // Get parent entity (layout element) for actual position
     var pos = this.el.parentEl.getAttribute('position');
     this.el.pos = pos;
-    
+
     this.minimenu = false;
-    
+
     //Call action by input parameter
     var action = window[this.data.action];
     if (typeof action === "function") {
@@ -167,7 +167,7 @@ AFRAME.registerComponent('menu-item', {
     // Click event is used by fuse
     this.el.addEventListener('click', function () {
       if (this.active) {
-        
+
         document.querySelector('#click').play();
         // Call action function, pass self in for access to variables
         this.action(this);
@@ -243,12 +243,12 @@ AFRAME.registerComponent('menu-item', {
         var postr = -pos.x + ' ' + (-pos.y + 2) + ' ' + 30; // zpos is simply scaled cam distance from menu
         this.setAttribute('animation__position', 'property: position; from: ' + postr + '; to: 0 0 0; dur: 1000');
         this.setAttribute('animation__scale', 'property: scale; from: 7.75 7.75 7.75; to: 1 1 1; dur: 1000');
-        
+
         document.querySelector('#streetlightsleft').setAttribute('animation__rotation', 'property: rotation; from: -180 90 0; to: 0 90 0; dur: 250');
         document.querySelector('#streetlightsright').setAttribute('animation__rotation', 'property: rotation; from: 180 90 0; to: 0 90 0; dur: 250');
-        
+
         document.querySelector('#cursor').setAttribute("visible", true);
-        
+
         this.active = true;
         this.surround = false;
       }
@@ -258,8 +258,8 @@ AFRAME.registerComponent('menu-item', {
 
 /*
   Controls music playback and emits timed beats to alert other entities about the current
-  location in the song. 
-  
+  location in the song.
+
   Entities must assign themselves the class "beatlistener" with the appropriate number beat
   they'd like to hear. The music manager will send a beat only to those subscribed entities,
   only on that one beat.
@@ -275,19 +275,19 @@ AFRAME.registerComponent('music-manager', {
     this.time = 0;
     this.song = document.querySelector('#side');
     this.cam = document.querySelector('#camera');
-    if (!this.cam) { 
+    if (!this.cam) {
       console.error("Music manager can't find the camera!");
-      return; 
+      return;
     }
   },
   tick: function (time, timeDelta) {
     this.time += timeDelta;
     var data = this.data;
-    
+
     // We want to run until the tick handler is waiting for another beat
     while (this.time > this.beatbar) {
       this.beatbar += beat;
-      
+
       if (this.started) {
         // Grab all assets who should hear this beat, and emit to them
         var els = this.el.sceneEl.querySelectorAll('.beatlistener' + this.beatcount);
@@ -312,7 +312,7 @@ AFRAME.registerComponent('music-manager', {
           this.started = true;
           this.time = 0;
           this.beatbar = beat;
-          
+
           this.song.play();
         }
       }
@@ -324,12 +324,12 @@ AFRAME.registerComponent('music-manager', {
   Will move an object regularly to keep it aligned with the camera. Designed with repeating layouts of
   objects in mind, so the camera will appear to move through the group of objects without ever reaching
   the end.
-  
+
   Works bi-directionally but currently will only stop following or delete itself if the camera passes
   a threshold in the -z direction.
-  
-  Math is somewhat arbitrary but there's a logic to it. Divides entity into 5 slices. 
-  Basically, the goal is to keep the camera in the center slice. Ensures there are always 2/5th of the 
+
+  Math is somewhat arbitrary but there's a logic to it. Divides entity into 5 slices.
+  Basically, the goal is to keep the camera in the center slice. Ensures there are always 2/5th of the
   total object both ahead and behind. Does require that following object has distances between components
   in multiples of 5, or movement jumps will be obvious.
 */
@@ -342,17 +342,17 @@ AFRAME.registerComponent('followcamera', {
   init: function () {
     this.startpos = this.el.getAttribute('position');
     this.stopfollow = false;
-    
+
     var position = this.el.getAttribute('position');
     var centerfront = position.z - 3 * this.data.length / 5;
     var centerback = position.z - 2 * this.data.length / 5;
   },
   tick: function () {
     var data = this.data;
-    
+
     var cam = document.querySelector('#camera');
     if (!cam) { return; }
-    
+
     var campos = cam.getAttribute('position');
     var position = this.el.getAttribute('position');
     var centerlow = position.z - 3 * data.length / 5;
@@ -376,7 +376,7 @@ AFRAME.registerComponent('followcamera', {
         if (this.el.classList.contains('slowdelete')) {
           // Add a more complex delete function here, probly just loop through the children and delete one per x tick
         }
-        this.el.parentNode.removeChild(this.el); 
+        this.el.parentNode.removeChild(this.el);
       }
     }
   }
@@ -421,7 +421,7 @@ AFRAME.registerComponent('slide', {
     positionTmp.x = position.x - xdelta;
     positionTmp.y = position.y + ydelta;
     positionTmp.z = position.z - zdelta;
-    
+
     el.setAttribute('position', positionTmp);
   }
 });
@@ -441,7 +441,7 @@ AFRAME.registerComponent('camera-manager', {
   },
   init: function () {
     var el = this.el;
-    
+
     // Use regular look controls for VR. Custom look controls don't work. Codebase is inconsistent.
     if (el.getAttribute('id') == 'camera') {
       if (checkHeadsetConnected()) {
@@ -456,15 +456,15 @@ AFRAME.registerComponent('camera-manager', {
         el.setAttribute('my-look-controls', '');
       }
     }
-    
+
     var position = el.getAttribute('position');
     this.el.state = "menu";
     this.initialPos = position.z;
-    
+
     this.el.addEventListener('start', function () {
       this.state = "start";
     });
-    
+
     // Only the main camera manager should have freedom of movement in debug mode
     if (debug && this.data.id == 'main') {
       this.el.setAttribute('wasd-controls', "acceleration: 1500; fly: true");
@@ -473,11 +473,11 @@ AFRAME.registerComponent('camera-manager', {
   tick: function (time, timeDelta) {
     var el = this.el;
     var data = this.data;
-    
+
     // TODO set this.pause = true from emitted event
-    
+
     if (this.el.state == "done") {
-      return; 
+      return;
     }
     else if (el.state == "start") {
       var xdelta = 0; var ydelta = 0; var zdelta = 0;
@@ -505,11 +505,11 @@ AFRAME.registerComponent('camera-manager', {
       positionTmp.x = position.x - xdelta;
       positionTmp.y = position.y + ydelta;
       positionTmp.z = position.z - zdelta;
-      
+
       if (position.z < data.stop) {
         this.el.state = "done";
       }
-      
+
       el.setAttribute('position', positionTmp);
     }
   }
@@ -542,11 +542,11 @@ AFRAME.registerComponent('timedisabler', {
 AFRAME.registerComponent('gotospace', {
   init: function () {
     this.el.blastoff = false;
-    
+
     this.el.addEventListener('beat', function (event) {
       this.blastoff = true;
     });
-    
+
     this.index = 0;
   },
   tick: function () {
@@ -585,7 +585,7 @@ AFRAME.registerComponent('gotospace', {
           sky.setAttribute('visible', false);
           var starcolor = document.querySelector('#starcolor');
           starcolor.setAttribute('animation__vanish', "property: material.opacity; from: 0.4; to: 0;");
-          break; 
+          break;
       }
       this.index++;
       var starcolor = document.querySelector('#starcolor');
@@ -638,7 +638,7 @@ AFRAME.registerComponent('audio-react', {
   init: function () {
     this.build = 0;
     var analyser = document.createElement('a-entity');
-    
+
     this.analyserEl = analyser;
     this.firstpos = this.el.getAttribute('position');
     if (!this.data.build) {
@@ -659,20 +659,20 @@ AFRAME.registerComponent('audio-react', {
     var analyserEl = data.analyserEl;
     var volume = 0;
     var levels;
-    
+
     var cam = document.querySelector('#camera');
     var campos = cam.getAttribute('position');
-    
+
     if (!this.el.started) {
       return;
     }
-    
+
     if (analyserEl) {
        //var sound = song.components.sound;
        volume = analyserEl.components.audioanalyser.volume * data.multiplier * 0.05;
     }
     else return;
-    
+
     if (this.build < 1) {
       this.build += 0.001 * data.build;
     }
@@ -680,7 +680,7 @@ AFRAME.registerComponent('audio-react', {
     var curprop = this.el.getAttribute(data.property);
     if (data.property == 'position') {
       if (data.reverse) {
-        val = -val; 
+        val = -val;
       }
       this.el.setAttribute(data.property, {
         x: curprop.x,

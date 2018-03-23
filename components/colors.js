@@ -30,28 +30,28 @@ function rainbowCycle(state, color, speed) {
   if(state == 0){
     g = g + speed;
       if(g >= 255) {
-        g = 255; 
+        g = 255;
         state = 1;
       }
   }
   if(state == 1){
     r = r - speed;
     if(r <= 0) {
-      r = 0; 
+      r = 0;
       state = 2;
     }
   }
   if(state == 2){
     b = b + speed;
     if(b >= 255) {
-      b = 255; 
+      b = 255;
       state = 3;
     }
   }
   if(state == 3){
     g = g - speed;
     if(g <= 0) {
-      g = 0; 
+      g = 0;
       state = 4;
     }
   }
@@ -65,7 +65,7 @@ function rainbowCycle(state, color, speed) {
   if(state == 5){
     b = b - speed;
     if(b <= 0) {
-      b = 0; 
+      b = 0;
       state = 0;
     }
   }
@@ -85,14 +85,14 @@ function getRandomColor() {
 
 /*
   A hilariously mutated version of entity-generator which, at this point, is entirely my own code.
-  
+
   Defines a number of ways to animate color across groups of elements. Uses both standard animations
   and a few custom color animations. Most involved is the "flip" animation, which changes element
   color sequentially and can be configured to move to a visualizer beat, input time interval, or
   continuous loop at a given speed. This was a 'performance optimized' way to get animated color
   across a large group of elements.
-  
-  Also includes visualizer integration for element movement, specifically to follow visualizer 
+
+  Also includes visualizer integration for element movement, specifically to follow visualizer
   "levels," which only make sense when applied to element groups.
 */
 AFRAME.registerComponent('entity-colors', {
@@ -103,8 +103,8 @@ AFRAME.registerComponent('entity-colors', {
      analyserEl: {type: 'selector'}, //Set up for audio-visualization elements
      max: {default: 20}, // Max for audio-visualizer levels
      multiplier: {default: 100}, // Multiplier for audio-visualization elements
-     audio_property: {default: 'off', oneOf: ['scale', 
-                                              'position', 
+     audio_property: {default: 'off', oneOf: ['scale',
+                                              'position',
                                               'material']},
      audio_levels: {default: false}, // Incorporate levels into audio values
      audio_buildup: {default: 0}, // Slowly build from no visualizing into normal amounts. Number is speed of build
@@ -120,14 +120,14 @@ AFRAME.registerComponent('entity-colors', {
      slower: {default: 1}, // How many beats to take to change all elements
      alternate: {default: false}, // alternate colors per object (christmas light effect)
      fromcolor: {default: "#FFFF00"},
-     tocolor: {default: "#FF0000"}, 
+     tocolor: {default: "#FF0000"},
      delaysynch: {default: 4}, // Delayed tick execution prevents time inconsistencies
      flipcycle: {default: false}, // Continuous flipping cycle
      shift: {default: 0}, // Shift starting element for flip cycle
      id: {default: 0},
      class: {default: ''}
    },
- 
+
    init: function () {
      var el = this.el;
      var data = this.data;
@@ -180,35 +180,35 @@ AFRAME.registerComponent('entity-colors', {
    tick: function (time, timeDelta) {
      var el = this.el;
      var data = this.data;
-     
+
      if (data.color_type == 'rainbow') {
        for (var i = 0; i < data.num; i++) {
-         
+
          var child = el.children[i];
          var material = child.getAttribute('material');
          if (material) {
            var color = material.color;
            var state = child.getAttribute('colorstate');
-           
+
            var ret = rainbowCycle(state, color, data.speed);
-           
+
            var state = ret[0];
            material.color = ret[1];
-           
+
            child.setAttribute('material', material);
            child.setAttribute('colorstate', state)
          }
        }
      }
-     
+
      var analyserEl = data.analyserEl;
      var volume = 0;
      var levels;
-     
+
      if (analyserEl) {
        volume = analyserEl.components.audioanalyser.volume * this.data.multiplier * 4;
        //console.log("volume is " + volume);
-       
+
        if (data.audio_property != 'off') {
          if (data.audio_levels) {
            levels = analyserEl.components.audioanalyser.levels;
@@ -232,7 +232,7 @@ AFRAME.registerComponent('entity-colors', {
 
              // TODO: this can't be the same flag as flip directional reverse
              if (data.reverse) {
-               val = -val; 
+               val = -val;
              }
              children[i].setAttribute(data.audio_property, {
                x: curprop.x,
@@ -259,26 +259,26 @@ AFRAME.registerComponent('entity-colors', {
      }
 
      /*
-     
+
      */
      // TODO audioanalyser-beat? (beat detection)
      if (data.color_type == 'flip' || data.color_type == 'flip_audio') {
-       
+
        var beat = 594.059;
        this.time += timeDelta;
-       
+
        var startflipping = false;
-       
+
        // Next time point at which to begin flipping
        var barcrement = beat * data.every;
        // Move the bar multiple times if we got a long tick
        var numbars = Math.ceil((this.time - this.bar) / barcrement);
-       
+
        // Next time point at which to flip a single element
        var flipcrement = data.slower * beat / (data.num * 2) // Default runs in half a beat
        // Flip multiple times if we got a long tick
        var numflips = Math.ceil((this.time - this.flipbar) / flipcrement);
-       
+
        if (!this.flipping) {
 
          var threshold = 3.5;
@@ -290,29 +290,29 @@ AFRAME.registerComponent('entity-colors', {
          else if (data.color_type == 'flip') {
            // Delay tick execution until all elements are loaded
            if (time < data.delaysynch) {
-             return; 
+             return;
            }
            startflipping = this.time > this.bar;
          }
          else return;
        }
-       
+
        if (startflipping) {
          this.flipping = true;
          // Bar moves up if we pass it. This means we're ready for the next one, even if flipping takes too long
          this.flipbar = this.bar += flipcrement * numflips;
          this.bar += barcrement * numbars;
        }
-       
+
        if (this.flipping) {
          if (this.time > this.flipbar) {
-           
+
            var index = this.flipdex++;
            if (data.reverse) {
              index = --this.flapdex;
            }
            //console.log("Checking flapdex as " + this.flapdex + " and index is " + index);
-           
+
            // Flip color
            var child = el.children[index];
            var material = {color: 'none'};
@@ -323,7 +323,7 @@ AFRAME.registerComponent('entity-colors', {
              material.color = data.tocolor;
            }
            child.setAttribute('material', material);
-           
+
            // Reset indices
            if (this.flipdex == data.num || this.flapdex == 0) {
              // TODO: this if catch might make alternating cooler if removed
@@ -337,7 +337,7 @@ AFRAME.registerComponent('entity-colors', {
              this.flipdex = 0;
              this.flapdex = this.data.num;
            }
-           
+
            // Update bar position and movement speed
            this.flipbar += flipcrement * numflips;
            numflips = Math.ceil((this.time - this.flipbar) / flipcrement);
@@ -353,7 +353,7 @@ AFRAME.registerComponent('entity-colors', {
 
 /*
   Ganzfeld simulator component.
-  
+
   Creates a simple sphere with uniform color, intended to surround the user.
   Manages keyboard controls to play/pause white noise and cycle colors.
 */
@@ -365,13 +365,13 @@ AFRAME.registerComponent('ganzfeld', {
   init: function () {
     var el = this.el;
     var data = this.data;
-    
+
     var sphere = document.createElement('a-entity');
     sphere.setAttribute('geometry', "primitive: sphere; radius: " + data.radius);
     sphere.setAttribute('material', "shader: flat; side: double; color: " + data.color);
     sphere.setAttribute('state', 0);
     this.el.appendChild(sphere);
-    
+
     window.addEventListener("keydown", function(e){
       if(e.keyCode === 71) { // g key to cycle colors
         var color = document.querySelector('#ganzfeld').children[0].getObject3D('mesh').material.color;

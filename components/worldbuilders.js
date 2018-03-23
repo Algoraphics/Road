@@ -2,8 +2,8 @@
 
 /*
   Worldbuilders define a customizeable grid of random assets which follows the camera to maintain
-  an illusion of movement through an environment. 
-  
+  an illusion of movement through an environment.
+
   Assets are customized using an input buildingfunction, which defines which assets to use, their
   individual settings, etc. These are generally rng-type assets, which independently handle random
   selection of characteristics.
@@ -31,22 +31,22 @@ AFRAME.registerComponent('worldbuilder', {
   init: function () {
     var data = this.data;
     this.loading = true;
-    
+
     // Construct width and height maps
     buildGrids(this);
-    
+
     this.x = 0;
     this.z = this.totalzmax - 1;
-    
+
     this.xpos = 0;
     this.zpos = this.z * data.grid;
-    
+
     this.xmax = this.totalxmax;
     this.zmax = this.totalzmax;
 
     var pos = this.el.getAttribute('position');
     this.centerz = (this.zpos / 2) + pos.z;
-    
+
     // Rise buildings from ground
     if (data.buildingfunction == 'colorCity') {
       var from = "" + pos.x + " " + pos.y + " " + pos.z;
@@ -58,11 +58,11 @@ AFRAME.registerComponent('worldbuilder', {
     // Allow shift for certain building types
     this.xshift = 0;
     this.zshift = 0;
-    
+
     // Set the line at which buildings should begin to be loaded. Zpos here is the full z length of the world
     this.el.loadbar = pos.z + data.loadmult * this.zpos;
     this.el.startedload = false;
-    
+
     this.showbar = pos.z + this.zpos + data.showbar;
     // Debug
     this.startbar = this.loadbar;
@@ -72,10 +72,10 @@ AFRAME.registerComponent('worldbuilder', {
     this.movedex = 0;
     this.follow = true;
     this.stopfollow = pos.z + data.stopfollow + this.zpos/2;
-    
+
     // Setup for unloading
     this.unloadbar = this.stopfollow;
-    
+
     this.el.addEventListener('start', function () {
       // Only do this once. If the user presses start but decides to go back, we don't need to load more.
       if (!this.startedload) {
@@ -83,7 +83,7 @@ AFRAME.registerComponent('worldbuilder', {
         this.startedload = true;
       }
     });
-    
+
     // Useful info for planning multiple worlds in sequence
     console.log("Worldbuilder " + data.buildingfunction + " starts at " + (pos.z + this.zpos) + " and ends at " + (pos.z) + ", center is " + this.centerz +
                 ". loadbar is " + this.el.loadbar + ", showbar is " + this.showbar + ", will stop following at " + (pos.z + data.stopfollow));
@@ -119,13 +119,13 @@ AFRAME.registerComponent('worldbuilder', {
 
         this.offset += 0.01;
         if (this.offset == 0.05) {
-          this.offset = 0; 
+          this.offset = 0;
         }
 
         this.z--;
         this.zpos -= data.grid + this.offset;
       }
-      
+
       // Let other components know when loading is halfway done
       if (this.z < this.zmax / 2) {
         if (data.buildingfunction == 'movingCity') {
@@ -163,7 +163,7 @@ AFRAME.registerComponent('worldbuilder', {
           this.movedex++;
           this.centerz -= data.grid;
           if (this.movedex == this.zmax) {
-            this.movedex = 0; 
+            this.movedex = 0;
           }
         }
       }
@@ -180,9 +180,9 @@ AFRAME.registerComponent('worldbuilder', {
           // Remove the last row
           this.unloadbar -= data.grid;
           el.removeChild(el.children[this.movedex]);
-          
+
           if (this.movedex == el.children.length) {
-            this.movedex = 0; 
+            this.movedex = 0;
           }
           // Once all children are gone, just delete the whole worldbuilder
           if (el.children.length == 0) {
@@ -201,7 +201,7 @@ not sure how possible that is without a lot of arbitrary constants or some serio
 */
 function buildGrids(wb) {
   var data = wb.data;
-  
+
   var xstart = 0;
   var xmax = data.blockx;
   var zstart = 0;
@@ -210,12 +210,12 @@ function buildGrids(wb) {
   wb.totalxmax = xmax + xincrement * (data.numblockx - 1);
   var zincrement = data.gapwidth + zmax;
   wb.totalzmax = zmax + zincrement * (data.numblockz - 1);
-  
+
   // If we don't need the grids, just set the max values and exit
   if (!data.buildgrids) {
-    return; 
+    return;
   }
-  
+
   // Increase the size of overall grid to allow for further checking
   var widths = [];
   // Actual building heights for placing
@@ -317,7 +317,7 @@ function buildGrids(wb) {
 
 // Buildingfunction for a colorful cityscape with shader buildings
 function colorCity(builder, data) {
-  
+
   var height = builder.heights[builder.z][builder.x];
   var width = builder.widths[builder.z][builder.x];
 
@@ -351,7 +351,7 @@ function colorCity(builder, data) {
 
     rngbuilding.setAttribute('position', (builder.xpos - builder.xshift) + " 0 " + (builder.zpos + builder.zshift));
     rngbuilding.setAttribute('rotation', "0 " + yrotation + " 0");
-    
+
     // TODO: this.children gets child if you're in the component. For some reason you have to call .el to get the children once passed to a function
     var row = builder.el.children[builder.zmax - builder.z - 1];
     row.appendChild(rngbuilding);
@@ -362,19 +362,19 @@ function colorCity(builder, data) {
 // Currently uses some arbitrary timing for cool effects with walking robots, etc.
 function movingCity(builder, data) {
   var row = builder.el.children[builder.zmax - builder.z - 1];
-  
+
   var start = 48;
-  
+
   var width = 1;
   var height = 2;
-  
+
   var xoffset = 0;
   var zoffset = 0;
   var gridset = data.grid / 3;
   var fullrange = Math.random() * 2 * gridset - gridset;
-  
+
   var yrotation = 0;
-  
+
   var xcenter = (builder.xmax - data.numblockx * data.gapwidth) / 2;
   var rngbuilding = document.createElement('a-entity');
   var typestr = "; windowtype: 1 0 0 0 0; colortype: 1 0 0 0 0 0";
@@ -397,12 +397,12 @@ function movingCity(builder, data) {
     //console.log("b is " + (builder.x == (builder.xmax - 1)));
     if (builder.x == 0 || (builder.x == (builder.xmax - 1))) { // Edges have less, they're far away
       if (rng([true, false], '5 1')) { // True means no building
-        return; 
+        return;
       }
     }
     else {
       if (rng([true, false], '1 1')) { // True means no building
-        return; 
+        return;
       }
     }
     // If we made it to here, there's no robot and we need a building. Time to pick a type.
@@ -474,7 +474,7 @@ function movingCity(builder, data) {
     }
     else {
       xoffset = fullrange;
-      zoffset = fullrange; 
+      zoffset = fullrange;
     }
   }
   else if (type == 'robot') {
@@ -487,7 +487,7 @@ function movingCity(builder, data) {
       xoffset = -101.5;
       yrotation = 0;
     }
-    
+
     var jumper = document.createElement('a-entity');
     jumper.setAttribute('rng-building-sine', "color1: #ffff00; width: 2; dist: 20; skip: true; cont: true; num: 2" +
                              + "; height: 2" + typestr + "; start: " + jumpstart);
