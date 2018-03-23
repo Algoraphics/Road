@@ -4,13 +4,13 @@
     <title>Road.</title>
     <meta name="description" content="Road.">
     <!-- Included components -->
-    <script src="https://aframe.io/releases/0.7.0/aframe.min.js"></script>
-    <script src="https://rawgit.com/feiss/aframe-environment-component/master/dist/aframe-environment-component.min.js"></script>
-    <script src="https://unpkg.com/aframe-animation-component/dist/aframe-animation-component.min.js"></script>
+    <script src="https://rawgit.com/aframevr/aframe/4d90df5/dist/aframe-master.min.js"></script>
+    <script src="https://rawgit.com/feiss/aframe-environment-component@1.0.0/master/dist/aframe-environment-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-animation-component@4.1.1/dist/aframe-animation-component.min.js"></script>
     <script src="https://cdn.rawgit.com/zcanter/aframe-gradient-sky/master/dist/gradientsky.min.js"></script>
     <script src="https://npmcdn.com/aframe-event-set-component@3.0.1"></script>
     <script src="https://npmcdn.com/aframe-template-component@3.1.1"></script>
-    <script src="https://unpkg.com/aframe-text-geometry-component@^0.5.0/dist/aframe-text-geometry-component.min.js"></script>
+    <script src="https://unpkg.com/aframe-text-geometry-component@0.5.0/dist/aframe-text-geometry-component.min.js"></script>
     <script src="components/includes.js"></script>
     <!-- My files -->
     <script src="components/colors.js"></script>
@@ -107,7 +107,7 @@
     <script id="begin-link" type="text/html">
       <a-entity class="link" id="begin" visible="false"
         material="shader: caustic-shader; resolution: 2; color: yellow; backgroundColor: black; speed: 0.3; brightness: 2"
-        text-geometry="value: Loading . . .; size: 0.025;"
+        geometry="primitive: box"
         menu-item="action: begin; active: false; tag: begin;">
           <a-entity geometry="primitive: box; width: 0.22; height: 0.08; depth: 0.01"
               position="0.1 0.02 0.05" material="shader: flat; opacity: 0;"></a-entity>
@@ -139,7 +139,7 @@
         <a-mixin id="startsound" sound="on: click; src: #swoop"></a-mixin>
 
         <a-mixin id="rainbow" rainbowcycle="speed: 3"></a-mixin>
-        <a-mixin id="alterColors" animation="property: material.color; dir: alternate; dur: 594.06; easing: easeInOutSine; loop: true; to: #FF00FF"></a-mixin>
+        <a-mixin id="alterColors" animation="property: components.material.material.color; type: color; dir: alternate; dur: 594.06; easing: easeInOutSine; loop: true; to: #FF00FF"></a-mixin>
         <a-mixin id="scale" animation__scale= "property: scale; dir: alternate; dur: 297.03; easing: easeInSine; loop: true; to: 1.2 1 1.2"       ></a-mixin>
         <a-mixin id="cubes"
           geometry="primitive: box; height: 0.5; width: 0.5; depth: 0.5"
@@ -194,7 +194,7 @@
       <!-- Basic environment assets -->
       <a-sky visible="true" id="sunsky" src="#sunsetblur" radius="5500" rotation="0 -60 0" position="0 -50 -2000"></a-sky>
       <a-sky visible="true" id="starcolor" material="color:#FF00FF; opacity: 0" radius="5000" rotation="0 10 0" position="0 -50 -2000" class="beatlistener231"
-             animation__opacity="property: material.opacity; from: 0; to: 0.4; easing: easeInQuint; dur: 4752.472; startEvents: beat"></a-sky>
+             animation__opacity="property: components.material.material.opacity; from: 0; to: 0.4; easing: easeInQuint; dur: 4752.472; startEvents: beat"></a-sky>
       <a-sky visible="true" id="starsky" src="#stars" radius="9500" rotation="0 10 0" position="0 -50 -2800"></a-sky>
       <a-entity light="type: ambient; intensity: 0.3; distance: 50; decay: 2" position="0 10 10"></a-entity>
 
@@ -331,6 +331,9 @@
           fuse="true"
           raycaster="objects: .link">
         </a-cursor>
+
+        <a-entity tracked-controls="hand: left" geometry="primitive: sphere; radius: 0.1" material="color: #444"></a-entity>
+        <a-entity tracked-controls="hand: right" geometry="primitive: sphere; radius: 0.1" material="color: #444"></a-entity>
 
         <a-entity id="click-instruction" text="value: Click to use VR cursor.\n\nHover to select. \nESC to unlock cursor.; color: orange; align: center"
                   scale="2 2 2" position="0 -0.05 -1.75" rotation="0 0 0" animation__opacity="property: text.opacity; from: 0; to: 1; dur: 10000"></a-entity>

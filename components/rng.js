@@ -189,8 +189,6 @@ AFRAME.registerComponent('rng-building-arc', {
     this.el.appendChild(building);
 
     addBeatListener(this, 'arc');
-  },
-  tick: function () {
   }
 });
 
@@ -295,7 +293,6 @@ function sinmove(comp) {
   }
 
   var dist = comp.data.dist;
-  var curpos = {x: 0, y: 0, z: 0};
   var pi = 3.14159265358979;
   var push = dist*2;
   var offset = dist/2;
@@ -308,19 +305,20 @@ function sinmove(comp) {
   }
   for (var i = 0; i < comp.el.children.length; i++) {
 
+    var pos = comp.el.children[i].object3D.position;
     var sinval = (comp.time - beat*i/8)*(pi/(2*beat));
 
     if (sinval > pi/2 && sinval < 3*pi/2) {
       if (comp.cont) {
-        curpos.x = comp.pos + dist*Math.sin(-sinval);
+        pos.x = comp.pos + dist*Math.sin(-sinval);
       } else {
-        curpos.x = dist*Math.sin(sinval*comp.reverse);
+        pos.x = dist*Math.sin(sinval*comp.reverse);
         if (comp.diag) {
-          curpos.z = curpos.x;
+          pos.z = pos.x;
         }
       }
       if (comp.reverse < 0 && comp.skip) {
-        curpos.y = -dist*Math.cos(sinval*comp.reverse);
+        pos.y = -dist*Math.cos(sinval*comp.reverse);
       }
     }
     else {
@@ -330,26 +328,25 @@ function sinmove(comp) {
         if ((sinval > 3*pi/2)) {
           outpos = -dist;
         }
-        curpos.x = comp.pos - outpos;
+        pos.x = comp.pos - outpos;
       } else {
         if ((comp.reverse < 0 && sinval < 3*pi/2) || (comp.reverse > 0 && sinval > pi/2)) {
           outpos = -dist;
         }
-        curpos.x = outpos;
+        pos.x = outpos;
         if (comp.diag) {
-          curpos.z = curpos.x;
+          pos.z = pos.x;
         }
       }
-      curpos.y = 0;
+      pos.y = 0;
     }
     // Offset so that starting point is beginning of animation
     if (!comp.center) {
-      curpos.x = curpos.x + dist;
+      pos.x = pos.x + dist;
       if (comp.diag) {
-        curpos.z = curpos.z + dist;
+        pos.z = pos.z + dist;
       }
     }
-    comp.el.children[i].setAttribute('position', curpos);
   }
 }
 
@@ -1020,10 +1017,12 @@ AFRAME.registerComponent('rng-capital-ship', {
     toprightangle.setAttribute('material', 'side: double; shader: building-shader; height: 0.65; width: 0.5;'
                          + 'numrows: 120; numcols: 40; colorgrid: 1');
     this.loadlist.push(toprightangle);
+
+    this.camera = document.getElementById('camera');
   },
   tick: function () {
     // Simple slow load given a list of entities
-    var campos = document.querySelector('#camera').getAttribute('position');
+    var campos = this.camera.getAttribute('position');
     if (campos.z < this.data.load && this.loadex < this.loadlist.length) {
       this.el.appendChild(this.loadlist[this.loadex]);
       this.loadex++;
@@ -1141,11 +1140,13 @@ AFRAME.registerComponent('rng-building-snake', {
 
     // Unload considers input location, with a randomized offset so the whole group doesn't vanish at once
     this.unloadbar = data.unload - Math.floor(Math.random() * 200);
+
+    this.camera = document.getElementById('camera');
   },
   tick: function () {
     var data = this.data;
 
-    var campos = document.querySelector('#camera').getAttribute('position');
+    var campos = this.camera.getAttribute('position');
     if (this.depth > 0 && campos.z < this.loadbar) {
       this.loadbar -= data.loadslow;
 
@@ -1264,9 +1265,6 @@ AFRAME.registerComponent('rng-building-asteroid', {
       this.el.appendChild(building);
       scale -= 0.1;
     }
-  },
-  tick: function () {
-
   }
 });
 
@@ -1278,10 +1276,12 @@ AFRAME.registerComponent('rng-asteroids', {
     this.loadex = 0;
     this.load = this.el.object3D.position.z + 200;
     this.loaded = false;
+
+    this.camera = document.getElementById('camera');
   },
   tick: function () {
     var pos = this.el.object3D.position;
-    var campos = document.querySelector('#camera').getAttribute('position');
+    var campos = this.camera.getAttribute('position');
     while (campos.z < this.load && this.loadex < 200) {
       this.load -= 1;
 
@@ -1311,14 +1311,12 @@ AFRAME.registerComponent('rng-asteroids', {
           if (checkx > outer || checky > outer) { scale -= 1; }
         }
       }
-      var postr = x + " " + y + " " + z;
-      var scalestr = scale + " " + scale + " " + scale;
 
       building.setAttribute('rng-building-asteroid', 'start: ' + this.data.start);
-      building.setAttribute('position', postr);
-      building.setAttribute('rotation', postr);
+      building.setAttribute('position', {x: x, y: y, z: z});
+      building.setAttribute('rotation', {x: x, y: y, z: z});
       building.setAttribute('allrotate', '');
-      building.setAttribute('scale', scalestr);
+      building.setAttribute('scale', {x: scale, y: scale, z: scale});
       this.el.appendChild(building);
       this.loadex++;
     }
@@ -1445,11 +1443,15 @@ AFRAME.registerComponent('rng-building-spaceship', {
 
     // Load bar considers original position, a random offset, and an input multiplier for user control
     this.loadbar = data.load;
+
+    this.camera = document.getElementById('camera');
+
+    this.rotations = [[0, 0, 0], [90, 0, 0], [0 ,0, 90]];
   },
   tick: function () {
     var data = this.data;
 
-    var campos = document.querySelector('#camera').getAttribute('position');
+    var campos = this.camera.getAttribute('position');
     if (this.partdex < this.partmax && campos.z < this.loadbar) {
       var height = rng([3, 5, 7], "1 1 1");
       var width = rng([5, 6, 7], "1 1 1");
@@ -1472,13 +1474,11 @@ AFRAME.registerComponent('rng-building-spaceship', {
         height += 1;
       }
       this.scale -= 0.01;
-      var postr = "0 " + posy + " " + this.partdex * zbuffer;
-      var rostr = pick_one(["0 0 0", "90 0 0", "0 0 90"]);
-      var scalestr = this.scale + " " + this.scale + " " + this.scale;
+      var rotation = pick_one(this.rotations);
 
-      building.setAttribute('position', postr);
-      building.setAttribute('rotation', rostr);
-      building.setAttribute('scale', scalestr);
+      building.setAttribute('position', {x: 0, y: posy, z: this.partdex * zbuffer});
+      building.setAttribute('rotation', {x: rotation[0], y: rotation[1], z: rotation[2]});
+      building.setAttribute('scale', {x: scale, y: scale, z: scale});
       building.setAttribute('rng-building-shader', "; width: " + (width * 2) + "; height: " + (height * 2) + "; color1: " + this.color1 + "; color2: " + this.color2
                             + "; static: 1 0; colorstyle: " + this.colorstyle + "; winheight: " + this.winheight + "; winwidth: " + this.winwidth
                             + "; action: spaceship; timeskip: " + this.partdex*-250);
@@ -1584,7 +1584,6 @@ AFRAME.registerComponent('rng-disco-tunnel', {
         var posx = ((Math.random() * (data.radius - 1)) + 1) * pick_one([-1, 1])
         var posy = ((Math.random() * (data.radius - 1)) + 1) * pick_one([-1, 1])
         var posz = Math.random() * data.length * 0.4 * pick_one([-1, 1])
-        postr = posx + " " + posy + " " + posz;
         rotation = "property: rotation; from: 0 0 0; to: 0 360 0; loop: true; easing: linear; dur: 20000";
         resolution = rng([0.25, 0.5, 1.0], "2 2 2");
         speed = pick_one([1.0, 2.0]);
@@ -1597,9 +1596,9 @@ AFRAME.registerComponent('rng-disco-tunnel', {
       ball.setAttribute('geometry', "primitive: " + shape + "; radius: " + radius + "; height: " + data.length);
       ball.setAttribute('material', "side: double; shader: disco-shader; speed: " + speed + "; resolution: " + resolution
                        + "; color: " + color + "; backgroundColor: " + bgcolor);
-      ball.setAttribute('position', postr);
+      ball.setAttribute('position', {x: posx, y: posy, z: posz});
+      ball.setAttribute('rotation', {x: 90, y: 0, z: 0});
       ball.setAttribute('animation__rotate', rotation);
-      ball.setAttribute('rotation', "90 0 0");
       this.el.appendChild(ball);
     }
   },

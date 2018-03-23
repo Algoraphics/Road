@@ -5,12 +5,12 @@
 */
 
 function rotato(el, xdelta, ydelta, zdelta) {
-  var rotationTmp = {x: 0, y: 0, z: 0};
   var rotation = el.getAttribute('rotation');
-  rotationTmp.x = rotation.x + xdelta;
-  rotationTmp.y = rotation.y + ydelta;
-  rotationTmp.z = rotation.z + zdelta;
-  el.setAttribute('rotation', rotationTmp);
+  el.object3D.rotation.set(
+    THREE.Math.degToRad(rotation.x + xdelta),
+    THREE.Math.degToRad(rotation.y + ydelta),
+    THREE.Math.degToRad(rotation.z + zdelta)
+  );
 }
 
 /*
@@ -50,7 +50,7 @@ AFRAME.registerComponent('glcube', {
       var mat = new THREE.MeshBasicMaterial( {color: 0x0000FF, wireframe: false});
 
       entity.setAttribute('mixin', "cubes");
-      entity.setAttribute('animation__color', "property: material.color; dir: alternate; dur: 3000; easing: easeInSine; loop: true; to: rgb(0, 250, 0)");
+      entity.setAttribute('animation__color', "property: components.material.material.color; type: color; dir: alternate; dur: 3000; easing: easeInSine; loop: true; to: rgb(0, 250, 0)");
       this.el.appendChild(entity);
     }
     //child.setAttribute("position", {x: 4});

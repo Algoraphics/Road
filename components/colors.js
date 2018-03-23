@@ -74,8 +74,8 @@ function rainbowCycle(state, color, speed) {
 
 
 // Pick a random color
+var letters = '0123456789ABCDEF';
 function getRandomColor() {
-  var letters = '0123456789ABCDEF';
   var color = '#';
   for (var i = 0; i < 6; i++) {
     color += letters[Math.floor(Math.random() * 16)];
@@ -185,7 +185,7 @@ AFRAME.registerComponent('entity-colors', {
        for (var i = 0; i < data.num; i++) {
 
          var child = el.children[i];
-         var material = child.getAttribute('material');
+         var material = '#' + child.components.material.material.color.getHexString();
          if (material) {
            var color = material.color;
            var state = child.getAttribute('colorstate');
@@ -195,7 +195,7 @@ AFRAME.registerComponent('entity-colors', {
            var state = ret[0];
            material.color = ret[1];
 
-           child.setAttribute('material', material);
+           child.components.material.material.color.set(ret[1]);
            child.setAttribute('colorstate', state)
          }
        }
@@ -234,25 +234,16 @@ AFRAME.registerComponent('entity-colors', {
              if (data.reverse) {
                val = -val;
              }
-             children[i].setAttribute(data.audio_property, {
-               x: curprop.x,
-               y: val,
-               z: curprop.z
-             });
+             children[i].object3D[data.audio_property].set(curprop.x, val, curprop.z);
            }
            else if (data.audio_property == 'scale') {
              val = (val - leval / 2) / 2;
-             children[i].setAttribute(data.audio_property, {
-               x: val,
-               y: val,
-               z: val
-             });
+             children[i].object3D[data.audio_property].set(val, val, val);
            }
            else if (data.audio_property == 'color') {
              // TODO: Make this actually scale current color
-             children[i].setAttribute(data.material, {
-               color: "#00FF00"
-             });
+             // We can `set` with x/y/z since color is r/g/b
+             children[i].components.material.material.color.set('#00FF00');
            }
          }
        }
@@ -322,7 +313,7 @@ AFRAME.registerComponent('entity-colors', {
            else {
              material.color = data.tocolor;
            }
-           child.setAttribute('material', material);
+           child.components.material.material.color.set(material.color);
 
            // Reset indices
            if (this.flipdex == data.num || this.flapdex == 0) {
@@ -414,12 +405,10 @@ AFRAME.registerComponent('rainbowcycle', {
   },
   tick: function () {
     var el = this.el;
-    var material = el.getAttribute('material');
-    var color = material.color;
+    var color = '#' + el.components.material.material.color.getHexString();
     var speed = this.data.speed;
     var ret = rainbowCycle(this.state, color, speed);
     this.state = ret[0];
-    material.color = ret[1];
-    el.setAttribute('material', material);
+    el.components.material.material.color.set(ret[1]);
   }
 });

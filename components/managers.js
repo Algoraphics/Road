@@ -350,7 +350,7 @@ AFRAME.registerComponent('followcamera', {
   tick: function () {
     var data = this.data;
 
-    var cam = document.querySelector('#camera');
+    var cam = this.el.sceneEl.camera.el;
     if (!cam) { return; }
 
     var campos = cam.getAttribute('position');
@@ -364,7 +364,6 @@ AFRAME.registerComponent('followcamera', {
       else if (campos.z > centerhigh) {
         position.z += data.length / 5;
       }
-      this.el.setAttribute('position', position);
     }
     if (campos.z < data.stopfollow) {
       this.stopfollow = true;
@@ -418,11 +417,9 @@ AFRAME.registerComponent('slide', {
     var positionTmp = this.positionTmp = this.positionTmp || {x: 0, y: 0, z: 0};
     var position = el.getAttribute('position');
 
-    positionTmp.x = position.x - xdelta;
-    positionTmp.y = position.y + ydelta;
-    positionTmp.z = position.z - zdelta;
-
-    el.setAttribute('position', positionTmp);
+    position.x -= xdelta;
+    position.y += ydelta;
+    position.z -= zdelta;
   }
 });
 
@@ -553,42 +550,42 @@ AFRAME.registerComponent('gotospace', {
     if (this.el.blastoff) {
       switch(this.index) {
         case 2:
-          var boxleft = document.querySelector('#boxleft');
+          var boxleft = document.getElementById('boxleft');
           boxleft.parentNode.removeChild(boxleft);
-          var boxright = document.querySelector('#boxright');
+          var boxright = document.getElementById('boxright');
           boxright.parentNode.removeChild(boxright);
           break;
         case 3:
-          var boxfront = document.querySelector('#boxfront');
+          var boxfront = document.getElementById('boxfront');
           boxfront.parentNode.removeChild(boxfront);
-          var boxback = document.querySelector('#boxback');
+          var boxback = document.getElementById('boxback');
           boxback.parentNode.removeChild(boxback);
           break;
         case 4:
-          var gridleft = document.querySelector('#gridleft');
+          var gridleft = document.getElementById('gridleft');
           gridleft.parentNode.removeChild(gridleft);
-          var gridright = document.querySelector('#gridright');
+          var gridright = document.getElementById('gridright');
           gridright.parentNode.removeChild(gridright);
           break;
         case 6:
-          var floor = document.querySelector('#floor');
+          var floor = document.getElementById('floor');
           floor.parentNode.removeChild(floor);
-          var floorleft = document.querySelector('#floorleft');
+          var floorleft = document.getElementById('floorleft');
           floorleft.parentNode.removeChild(floorleft);
-          var flooright = document.querySelector('#flooright');
+          var flooright = document.getElementById('flooright');
           flooright.parentNode.removeChild(flooright);
-          var road = document.querySelector('#road');
+          var road = document.getElementById('road');
           road.parentNode.removeChild(road);
           break;
         case 8:
-          var sky = document.querySelector('#sunsky');
+          var sky = document.getElementById('sunsky');
           sky.setAttribute('visible', false);
-          var starcolor = document.querySelector('#starcolor');
-          starcolor.setAttribute('animation__vanish', "property: material.opacity; from: 0.4; to: 0;");
+          var starcolor = document.getElementById('starcolor');
+          starcolor.setAttribute('animation__vanish', "property: components.material.material.opacity; from: 0.4; to: 0;");
           break;
       }
       this.index++;
-      var starcolor = document.querySelector('#starcolor');
+      var starcolor = document.getElementById('starcolor');
     }
   }
 });
@@ -616,7 +613,9 @@ AFRAME.registerComponent('removetunnels', {
         case 384:
           var kal = document.querySelector('#kaltunnel');
           kal.setAttribute('animation__scale2', "property: scale; from: 1 1 1; to: 0.01 0.01 0.01;");
-          kal.setAttribute('animation__visible', "property: visible; from: true; to: false; delay: 1000");
+          setTimeout(() => {
+            kal.object3D.visible = false;
+          }, 1000);
       }
     });
   },
@@ -660,7 +659,7 @@ AFRAME.registerComponent('audio-react', {
     var volume = 0;
     var levels;
 
-    var cam = document.querySelector('#camera');
+    var cam = this.el.sceneEl.camera.el;
     var campos = cam.getAttribute('position');
 
     if (!this.el.started) {
@@ -682,27 +681,19 @@ AFRAME.registerComponent('audio-react', {
       if (data.reverse) {
         val = -val;
       }
-      this.el.setAttribute(data.property, {
-        x: curprop.x,
-        y: val,
-        z: curprop.z
-      });
+      this.el.object3D[data.property].set(curprop.x, val, curprop.z);
     }
     else if (data.property == 'scale') {
       val = val / 2;
-      this.el.setAttribute(data.property, {
-        x: val,
-        y: val,
-        z: val
-      });
+      this.el.object3D[data.property].set(val, val, val);
       if (data.stablebase) {
         var curpos = this.el.getAttribute('position');
-        this.el.setAttribute('position', {
-          x: curpos.x,
+        this.el.object3D.position.set(
+          curpos.x,
           // TODO: this may not work with moving objects, will always reset y position to initial
-          y: this.firstpos.y + val/2,
-          z: curpos.z
-        });
+          this.firstpos.y + val/2,
+          curpos.z
+        );
       }
     }
     else if (data.property == 'shader-color') {

@@ -84,6 +84,8 @@ AFRAME.registerComponent('worldbuilder', {
       }
     });
 
+    this.camera = document.getElementById('camera');
+
     // Useful info for planning multiple worlds in sequence
     console.log("Worldbuilder " + data.buildingfunction + " starts at " + (pos.z + this.zpos) + " and ends at " + (pos.z) + ", center is " + this.centerz +
                 ". loadbar is " + this.el.loadbar + ", showbar is " + this.showbar + ", will stop following at " + (pos.z + data.stopfollow));
@@ -91,7 +93,7 @@ AFRAME.registerComponent('worldbuilder', {
   tick: function (time, timeDelta) {
     var el = this.el;
     var data = this.data;
-    var campos = document.querySelector('#camera').getAttribute('position');
+    var campos = camera.object3D.position;
     // If we should be loading, load the next element and adjust indices accordingly
     if (this.loading && campos.z < this.el.loadbar) {
       this.el.loadbar -= data.loadslow;
@@ -136,7 +138,7 @@ AFRAME.registerComponent('worldbuilder', {
       if (this.z < 0) {
         console.log("Worldbuilder " + data.buildingfunction + " loading done.");
         //console.log("Created " + numbuildings + " buildings");
-        this.el.setAttribute('visible', true);
+        this.el.object3D.visible = true;
         this.loading = false;
       }
     }
@@ -349,8 +351,16 @@ function colorCity(builder, data) {
       builder.xshift = -builder.xshift;
     }
 
-    rngbuilding.setAttribute('position', (builder.xpos - builder.xshift) + " 0 " + (builder.zpos + builder.zshift));
-    rngbuilding.setAttribute('rotation', "0 " + yrotation + " 0");
+    rngbuilding.setAttribute('position', {
+      x: builder.xpos - builder.xshift,
+      y: 0,
+      z: builder.zpos + builder.zshift
+    });
+    rngbuilding.setAttribute('rotation', {
+      x: 0,
+      y: yrotation,
+      z: 0
+    });
 
     // TODO: this.children gets child if you're in the component. For some reason you have to call .el to get the children once passed to a function
     var row = builder.el.children[builder.zmax - builder.z - 1];
@@ -491,8 +501,8 @@ function movingCity(builder, data) {
     var jumper = document.createElement('a-entity');
     jumper.setAttribute('rng-building-sine', "color1: #ffff00; width: 2; dist: 20; skip: true; cont: true; num: 2" +
                              + "; height: 2" + typestr + "; start: " + jumpstart);
-    jumper.setAttribute('position', (builder.xpos + xoffset) + " 0 " + (builder.zpos + zoffset));
-    jumper.setAttribute('rotation', "0 " + yrotation + " 0");
+    jumper.setAttribute('position', {x: builder.xpos + xoffset, y: 0, z: builder.zpos + zoffset});
+    jumper.setAttribute('rotation', {x: 0, y: yrotation, z: 0});
     row.appendChild(jumper);
   }
 
@@ -502,8 +512,16 @@ function movingCity(builder, data) {
     xoffset += 5;
   }
 
-  rngbuilding.setAttribute('position', (builder.xpos + xoffset) + " 0 " + (builder.zpos + zoffset));
-  rngbuilding.setAttribute('rotation', "0 " + yrotation + " 0");
+  rngbuilding.setAttribute('position', {
+    x: builder.xpos + xoffset,
+    y: 0,
+    z: builder.zpos + zoffset
+  });
+  rngbuilding.setAttribute('rotation', {
+    x: 0,
+    y: yrotation,
+    z: 0
+  });
 
   row.appendChild(rngbuilding);
 }
