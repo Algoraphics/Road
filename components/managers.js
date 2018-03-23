@@ -443,7 +443,7 @@ AFRAME.registerComponent('camera-manager', {
     if (el.getAttribute('id') == 'camera') {
       if (checkHeadsetConnected()) {
         el.setAttribute('look-controls','');
-        el.setAttribute('position', '0 1.6 30');
+        el.setAttribute('position', '0 0 30');
         document.querySelector('#click-instruction').setAttribute('visible', 'false');
         if (isMobile()) {
           el.setAttribute('position', '0 1.6 30');
